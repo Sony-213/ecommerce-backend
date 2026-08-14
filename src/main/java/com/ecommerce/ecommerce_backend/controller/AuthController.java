@@ -1,6 +1,7 @@
 package com.ecommerce.ecommerce_backend.controller;
 
 import com.ecommerce.ecommerce_backend.dto.RegisterRequest;
+import com.ecommerce.ecommerce_backend.dto.RegisterResponse;
 import com.ecommerce.ecommerce_backend.entity.User;
 import com.ecommerce.ecommerce_backend.service.UserService;
 import jakarta.validation.Valid;
@@ -22,13 +23,21 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<User> register(
+    public ResponseEntity<RegisterResponse> register(
             @Valid @RequestBody RegisterRequest request) {
 
         User user = userService.registerUser(request);
 
+        RegisterResponse response = RegisterResponse.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .createdAt(user.getCreatedAt())
+                .build();
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(user);
+                .body(response);
     }
 }
