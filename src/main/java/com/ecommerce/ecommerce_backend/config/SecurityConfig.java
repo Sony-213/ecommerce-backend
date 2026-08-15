@@ -19,10 +19,24 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/api/test"
+                        ).permitAll()
                         .anyRequest().authenticated()
+                )
+                .addFilterBefore(
+                        jwtAuthenticationFilter,
+                        org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class
                 );
 
         return http.build();
+    }
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    public SecurityConfig(
+            JwtAuthenticationFilter jwtAuthenticationFilter) {
+
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 }

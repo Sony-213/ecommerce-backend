@@ -1,5 +1,7 @@
 package com.ecommerce.ecommerce_backend.controller;
 
+import com.ecommerce.ecommerce_backend.dto.LoginRequest;
+import com.ecommerce.ecommerce_backend.dto.LoginResponse;
 import com.ecommerce.ecommerce_backend.dto.RegisterRequest;
 import com.ecommerce.ecommerce_backend.dto.RegisterResponse;
 import com.ecommerce.ecommerce_backend.entity.User;
@@ -39,5 +41,18 @@ public class AuthController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
+    }
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(
+            @Valid @RequestBody LoginRequest request) {
+        System.out.println("LOGIN CONTROLLER CALLED");
+        String token = userService.login(
+                request.getEmail(),
+                request.getPassword()
+        );
+
+        return ResponseEntity.ok(
+                new LoginResponse(token, "Bearer")
+        );
     }
 }
