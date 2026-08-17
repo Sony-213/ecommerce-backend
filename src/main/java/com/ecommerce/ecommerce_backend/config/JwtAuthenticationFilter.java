@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -29,9 +30,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain)
             throws ServletException, IOException {
 
+        // Get Authorization header
         final String authHeader =
                 request.getHeader("Authorization");
 
+        // If there is no JWT, continue the request
         if (authHeader == null ||
                 !authHeader.startsWith("Bearer ")) {
 
@@ -39,24 +42,39 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
+        // Remove "Bearer " from the beginning
         String jwt = authHeader.substring(7);
 
         try {
 
-            String email = jwtService.extractUsername(jwt);
+            // Extract email from JWT
+            String email =
+                    jwtService.extractUsername(jwt);
+
+            // Extract role from JWT
+            String role =
+                    jwtService.extractRole(jwt);
 
             if (email != null &&
                     SecurityContextHolder
                             .getContext()
                             .getAuthentication() == null) {
 
+                // Convert USER into ROLE_USER
+                // Convert ADMIN into ROLE_ADMIN
+                SimpleGrantedAuthority authority =
+                        new SimpleGrantedAuthority(
+                                "ROLE_" + role
+                        );
+
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
                                 email,
                                 null,
-                                Collections.emptyList()
+                                Collections.singletonList(authority)
                         );
 
+                // Give authentication information to Spring Security
                 SecurityContextHolder
                         .getContext()
                         .setAuthentication(authentication);

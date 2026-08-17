@@ -24,8 +24,9 @@ public class User {
     private String email;
     @Column(nullable = false)
     private String password;
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String role;
+    private Role role;
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
     @PrePersist  //gives correct time and data
