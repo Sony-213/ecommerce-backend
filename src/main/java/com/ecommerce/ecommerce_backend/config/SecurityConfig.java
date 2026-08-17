@@ -42,7 +42,6 @@ public class SecurityConfig {
 
                         // Anyone can view products
                         .requestMatchers(
-                                HttpMethod.GET,
                                 "/api/products/**"
                         ).permitAll()
 

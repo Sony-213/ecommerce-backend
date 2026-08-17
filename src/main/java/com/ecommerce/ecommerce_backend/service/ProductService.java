@@ -4,6 +4,10 @@ import com.ecommerce.ecommerce_backend.dto.ProductRequest;
 import com.ecommerce.ecommerce_backend.entity.Product;
 import com.ecommerce.ecommerce_backend.exception.ProductNotFoundException;
 import com.ecommerce.ecommerce_backend.repository.ProductRepository;
+
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -17,6 +21,10 @@ public class ProductService {
     public ProductService(ProductRepository productRepository){
         this.productRepository=productRepository;
     }
+    @CacheEvict(
+            value = "products",
+            key = "'all'"
+    )
     public Product createProduct(ProductRequest request) {
 
         Product product = Product.builder()
@@ -30,9 +38,11 @@ public class ProductService {
 
         return productRepository.save(product);
     }
+    @Cacheable(value = "products", key = "'all'")
     public List<Product> getAllProducts(){
         return productRepository.findAll();
     }
+    @Cacheable(value = "products", key = "#id")
     public Product getProductById(Long id){
         return productRepository.findById(id).orElseThrow(() ->
                 new ProductNotFoundException(
@@ -40,6 +50,18 @@ public class ProductService {
                 )
         );
     }
+    @Caching(
+            evict = {
+                    @CacheEvict(
+                            value = "products",
+                            key = "#id"
+                    ),
+                    @CacheEvict(
+                            value = "products",
+                            key = "'all'"
+                    )
+            }
+    )
     public Product updateProduct(Long id,Product updatedProduct){
         Product existingProduct=productRepository.findById(id).orElseThrow(() ->
                 new ProductNotFoundException(
@@ -54,6 +76,18 @@ public class ProductService {
         existingProduct.setImageUrl(updatedProduct.getImageUrl());
         return productRepository.save(existingProduct);
 }
+    @Caching(
+            evict = {
+                    @CacheEvict(
+                            value = "products",
+                            key = "#id"
+                    ),
+                    @CacheEvict(
+                            value = "products",
+                            key = "'all'"
+                    )
+            }
+    )
     public void deleteProduct(Long id) {
 
         Product product = productRepository.findById(id)
