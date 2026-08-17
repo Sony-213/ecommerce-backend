@@ -165,4 +165,96 @@ public class OrderService {
                 .items(items)
                 .build();
     }
+    @Transactional(readOnly = true)
+    public List<OrderResponse> getAllOrders() {
+
+        List<Order> orders =
+                orderRepository.findAll();
+
+        return orders.stream()
+                .map(this::convertToOrderResponse)
+                .toList();
+    }
+    @Transactional(readOnly = true)
+    public OrderResponse getOrderForAdmin(Long orderId) {
+
+        Order order =
+                orderRepository.findById(orderId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Order not found"
+                                ));
+
+        return convertToOrderResponse(order);
+    }
+    @Transactional
+    public OrderResponse updateOrderStatus(
+            Long orderId,
+            OrderStatus newStatus) {
+
+        Order order =
+                orderRepository.findById(orderId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Order not found"
+                                ));
+
+        OrderStatus currentStatus =
+                order.getStatus();
+
+        if (!isValidStatusTransition(
+                currentStatus,
+                newStatus)) {
+
+            throw new RuntimeException(
+                    "Invalid order status transition: "
+                            + currentStatus
+                            + " -> "
+                            + newStatus
+            );
+        }
+
+        order.setStatus(newStatus);
+
+        Order updatedOrder =
+                orderRepository.save(order);
+
+        return convertToOrderResponse(updatedOrder);
+    }
+    private boolean isValidStatusTransition(
+            OrderStatus currentStatus,
+            OrderStatus newStatus) {
+
+        // Same status is allowed
+        if (currentStatus == newStatus) {
+            return true;
+        }
+
+        // PLACED → CONFIRMED
+        if (currentStatus == OrderStatus.PLACED
+                && newStatus == OrderStatus.CONFIRMED) {
+            return true;
+        }
+
+        // PLACED → CANCELLED
+        if (currentStatus == OrderStatus.PLACED
+                && newStatus == OrderStatus.CANCELLED) {
+            return true;
+        }
+
+        // CONFIRMED → SHIPPED
+        if (currentStatus == OrderStatus.CONFIRMED
+                && newStatus == OrderStatus.SHIPPED) {
+            return true;
+        }
+
+        // SHIPPED → DELIVERED
+        if (currentStatus == OrderStatus.SHIPPED
+                && newStatus == OrderStatus.DELIVERED) {
+            return true;
+        }
+
+        // Everything else is invalid
+        return false;
+    }
 }

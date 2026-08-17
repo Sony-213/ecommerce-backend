@@ -68,6 +68,10 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/cart/**"
                         ).hasAnyRole("USER", "ADMIN")
+                        // Only ADMIN can access admin APIs
+                        .requestMatchers(
+                                "/api/admin/**"
+                        ).hasRole("ADMIN")
 
                         // USER and ADMIN can access orders
                         .requestMatchers(
