@@ -99,13 +99,32 @@ public class ProductService {
 
         productRepository.delete(product);
     }
-    public List<Product> searchProducts(String name) {
+    public Page<Product> searchProducts(
+            String name,
+            Pageable pageable) {
 
         return productRepository
-                .findByNameContainingIgnoreCase(name);
+                .findByNameContainingIgnoreCase(
+                        name,
+                        pageable
+                );
     }
     public Page<Product> getProducts(Pageable pageable) {
 
         return productRepository.findAll(pageable);
+    }
+    public Page<Product> getProducts(
+            String name,
+            Pageable pageable) {
+
+        if (name == null || name.trim().isEmpty()) {
+
+            return productRepository.findAll(pageable);
+        }
+
+        return productRepository.findByNameContainingIgnoreCase(
+                name,
+                pageable
+        );
     }
 }

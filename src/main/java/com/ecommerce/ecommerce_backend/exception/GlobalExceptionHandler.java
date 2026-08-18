@@ -37,4 +37,19 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.CONFLICT)
                 .body(Map.of("error", ex.getMessage()));
     }
+    @ExceptionHandler(InvalidPaginationException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidPagination(
+            InvalidPaginationException exception) {
+
+        Map<String, Object> response = Map.of(
+                "status", 400,
+                "error", "Bad Request",
+                "message", exception.getMessage(),
+                "timestamp", LocalDateTime.now()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(response);
+    }
 }
